@@ -224,7 +224,35 @@ app.post('/checklogin', function (req, res){
     var user_password = req.body.password
 
     if(user_buasri && user_password) {
-        
+        connection.query(
+            "SELECT * FROM accounts WHERE username = ?",user_buasri,
+            function(err, results){
+                if(err) {console.error()}
+                if(results.length > 0) {
+                    bcrypt.compare(user_password, results[0].password, function(err, resultt) {
+                        if(resultt == true) {
+                            req.session.loggedin = true
+                            req.session.userID = results[0].password
+
+                            console.log(user_password, results[0].password)
+                            console.log(resultt)
+                            res.redirect('/webboard')
+                        }
+                        else {
+                            res.render('index_error',{
+                                message : 'ชื่อรหัสผ่านไม่ถูก',
+                                user_id : user_buasri
+                            })
+                        }
+                    })
+                } else {
+                    res.render('index_error', {
+                        message : 'ชื่อรหัสผ่านไม่ถูก<br>(หากยังไม่เคยให้สมัคร)</br>',
+                        user_id : user_buasri
+                    })
+                }
+            }
+        )
     }
 })
 
